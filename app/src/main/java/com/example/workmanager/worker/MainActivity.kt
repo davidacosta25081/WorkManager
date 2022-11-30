@@ -1,11 +1,9 @@
-package com.example.workmanager
+package com.example.workmanager.worker
 
 import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import com.example.workmanager.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
