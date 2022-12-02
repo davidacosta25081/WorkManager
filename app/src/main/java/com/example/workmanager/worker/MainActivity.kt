@@ -2,12 +2,19 @@ package com.example.workmanager.worker
 
 import android.content.Intent
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.example.workmanager.databinding.ActivityMainBinding
+import com.example.workmanager.util.Constants.KEY_IMAGE_URI
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private var selectedImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,6 +23,19 @@ class MainActivity : AppCompatActivity() {
         setContentView(view)
 
         binding.btnSelectImage.setOnClickListener { imageChooser() }
+        binding.btnUploadImage.setOnClickListener {
+            selectedImageUri?.let {
+                val imageData = workDataOf(KEY_IMAGE_URI to selectedImageUri.toString())
+                val uploadWorkRequest = OneTimeWorkRequestBuilder<ImgurWorker>()
+                    .setInputData(imageData)
+                    .build()
+                WorkManager.getInstance(this).enqueue(uploadWorkRequest)
+            } ?: Toast.makeText(
+                applicationContext,
+                "Please... Select image first",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
 
@@ -31,12 +51,11 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (resultCode == RESULT_OK){
-            if(requestCode == 200){
-              val selectedImageUri: Uri? = data?.data
+        if (resultCode == RESULT_OK) {
+            if (requestCode == 200) {
+                selectedImageUri = data?.data
                 binding.ivImage.setImageURI(selectedImageUri)
             }
         }
     }
-
 }
