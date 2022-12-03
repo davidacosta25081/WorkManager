@@ -6,15 +6,17 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.work.*
+import androidx.lifecycle.ViewModelProvider
 import com.example.workmanager.databinding.ActivityMainBinding
-import com.example.workmanager.util.Constants
-import com.example.workmanager.util.Constants.KEY_IMAGE_URI
+
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var selectedImageUri: Uri? = null
+    private val viewModel: WMViewModel by lazy {
+        ViewModelProvider(this).get(WMViewModel::class.java)
+    }
 
     @SuppressLint("EnqueueWork")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,15 +28,7 @@ class MainActivity : AppCompatActivity() {
         binding.btnSelectImage.setOnClickListener { imageChooser() }
         binding.btnUploadImage.setOnClickListener {
             selectedImageUri?.let {
-                val imageData = workDataOf(KEY_IMAGE_URI to selectedImageUri.toString())
-                val uploadWorkRequest = OneTimeWorkRequestBuilder<ImgurWorker>()
-                    .setInputData(imageData)
-                    .build()
-                val fibWorker = OneTimeWorkRequest.from(FibonacciWorker::class.java)
-                WorkManager.getInstance(this)
-                    .beginUniqueWork(
-                        Constants.IMAGE_UPLOADER, ExistingWorkPolicy.REPLACE, uploadWorkRequest
-                    ).then(fibWorker).enqueue()
+                viewModel.workers(this,selectedImageUri!!)
             } ?: Toast.makeText(
                 applicationContext,
                 "Please... Select image first",
